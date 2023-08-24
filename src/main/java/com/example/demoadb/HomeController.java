@@ -48,7 +48,7 @@ public class HomeController {
         String test_table_users = "";
 
         try {
-            getOracleDataSource();
+            test_table_users = getOracleDataSource();
 //            PoolDataSource dataSource = getUCPoolDataSource();
 //
 //            if (dataSource != null) {
@@ -151,7 +151,9 @@ public class HomeController {
         return pds;
     }
 
-    public void getOracleDataSource() throws SQLException {
+    public String getOracleDataSource() throws SQLException {
+        
+        var dbUserName = "could not establish the connection";
         Properties info = new Properties();
         info.put(OracleConnection.CONNECTION_PROPERTY_USER_NAME, DB_USER);
         info.put(OracleConnection.CONNECTION_PROPERTY_PASSWORD, DB_PASSWORD);
@@ -170,11 +172,13 @@ public class HomeController {
             // Print some connection properties
             System.out.println("Default Row Prefetch Value is: "
                     + connection.getDefaultRowPrefetch());
-            System.out.println("Database Username is: " + connection.getUserName());
+            dbUserName = connection.getUserName();
+            System.out.println("Database Username is: " + dbUserName);
             System.out.println();
             // Perform a database operation 
             printEmployees(connection);
         }
+        return dbUserName;
     }
 
     /*
