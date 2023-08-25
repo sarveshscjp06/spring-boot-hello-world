@@ -38,13 +38,14 @@ public class HomeController {
     final static String DB_USER = "ADMIN";
     final static String DB_PASSWORD = "Sarvesh12345";
     final static String CONN_FACTORY_CLASS_NAME = "oracle.jdbc.pool.OracleDataSource";
-
+    protected char delimiter = ' ';
+    
     @GetMapping("/")
     public String home() throws SQLException {
 
 //        Connection conn = null;
-        Statement stmt = null;
-        ResultSet result = null;
+//        Statement stmt = null;
+//        ResultSet result = null;
         String test_table_users = "";
 
         try {
@@ -78,7 +79,7 @@ public class HomeController {
 //                test_table_users += "    " + result.getString("name");
 //            }
 //
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             Logger.getLogger(HomeController.class.getName()).log(Level.SEVERE, null, ex);
         }
 //        finally {
@@ -153,7 +154,7 @@ public class HomeController {
 
     public String getOracleDataSource() throws SQLException {
         
-        var dbUserName = "could not establish the connection";
+        StringBuilder out = new StringBuilder();
         Properties info = new Properties();
         info.put(OracleConnection.CONNECTION_PROPERTY_USER_NAME, DB_USER);
         info.put(OracleConnection.CONNECTION_PROPERTY_PASSWORD, DB_PASSWORD);
@@ -167,36 +168,41 @@ public class HomeController {
         try ( OracleConnection connection = (OracleConnection) ods.getConnection()) {
             // Get the JDBC driver name and version 
             DatabaseMetaData dbmd = connection.getMetaData();
-            System.out.println("Driver Name: " + dbmd.getDriverName());
-            System.out.println("Driver Version: " + dbmd.getDriverVersion());
+            String driverName = "\nDriver Name: " + dbmd.getDriverName() + this.delimiter;
+            out.append(driverName);
+            String driverVersion = "\nDriver Version: " + dbmd.getDriverVersion() + this.delimiter;
+            out.append(driverVersion);
             // Print some connection properties
-            System.out.println("Default Row Prefetch Value is: "
-                    + connection.getDefaultRowPrefetch());
-            dbUserName = connection.getUserName();
-            System.out.println("Database Username is: " + dbUserName);
-            System.out.println();
+            String defaultRowPrefetchValue = "\nDefault Row Prefetch Value is: " + connection.getDefaultRowPrefetch();
+            out.append(defaultRowPrefetchValue);
+            String dbUserName = connection.getUserName();
+            dbUserName = "\nDatabase Username is: " + dbUserName;
+            out.append(dbUserName);
             // Perform a database operation 
-            printEmployees(connection);
+            String employeeDetail = printEmployees(connection);
+            out.append(employeeDetail);
         }
-        return dbUserName;
+        return out.toString();
     }
 
     /*
   * Displays first_name and last_name from the employees table.
      */
-    public static void printEmployees(Connection connection) throws SQLException {
+    public static String printEmployees(Connection connection) throws SQLException {
+        String employeeDetail;
         // Statement and ResultSet are AutoCloseable and closed automatically. 
         try ( Statement statement = connection.createStatement()) {
             try ( ResultSet resultSet = statement
                     .executeQuery("select id, name from test_table")) {
-                System.out.println("FIRST_NAME" + "  " + "LAST_NAME");
-                System.out.println("---------------------");
+                employeeDetail = "\nFIRST_NAME" + "  " + "LAST_NAME";
+                employeeDetail += "\n---------------------";
                 while (resultSet.next()) {
-                    System.out.println(resultSet.getInt(1) + " "
-                            + resultSet.getString(2) + " ");
+                    employeeDetail += "\n"+resultSet.getInt(1) + " "
+                            + resultSet.getString(2) + " ";
                 }
             }
         }
+        return employeeDetail;
     }
 
     /*
